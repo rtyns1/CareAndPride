@@ -1,0 +1,18 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<div class="page-header">
+    <div>
+        <h1>Welcome to CarePride Academy</h1>
+        <p>School overview</p>
+    </div>
+</div>
+
+<div class="cards">
+    <div class="card"><div class="label">Students</div><div class="value">@Model.StudentCount</div></div>
+    <div class="card"><div class="label">Classes</div><div class="value">@Model.ClassCount</div></div>
+    <div class="card"><div class="label">Subjects</div><div class="value">@Model.SubjectCount</div></div>
+    <div class="card"><div class="label">Teachers</div><div class="value">@Model.TeacherCount</div></div>
+</div>

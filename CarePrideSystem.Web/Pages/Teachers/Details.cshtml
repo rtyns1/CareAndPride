@@ -1,0 +1,28 @@
+﻿@page "{id:guid}"
+@model CarePrideSystem.Web.Pages.Teachers.DetailsModel
+@{
+    ViewData["Title"] = "Teacher Details";
+}
+@if (Model.Teacher == null)
+{
+    <div class="alert alert-danger">Teacher not found.</div>
+    <a class="btn btn-secondary" href="/Teachers">Back</a>
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <h1>@Model.Teacher.FullName</h1>
+            <p>@Model.Teacher.Username</p>
+        </div>
+        <a class="btn btn-secondary" href="/Teachers">Back to Teachers</a>
+    </div>
+
+    <div class="panel" style="padding: 8px 24px;">
+        <div class="detail-row"><strong>Username</strong><span>@Model.Teacher.Username</span></div>
+        <div class="detail-row"><strong>Email</strong><span>@Model.Teacher.Email</span></div>
+        <div class="detail-row"><strong>Role</strong><span>@Model.Teacher.Role</span></div>
+        <div class="detail-row"><strong>Status</strong><span>@(Model.Teacher.IsApproved ? "Approved" : "Pending Approval")</span></div>
+        <div class="detail-row"><strong>Active</strong><span>@(Model.Teacher.IsActive ? "Yes" : "No")</span></div>
+    </div>
+}

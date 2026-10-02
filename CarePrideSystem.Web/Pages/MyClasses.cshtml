@@ -1,0 +1,78 @@
+﻿@page
+@model CarePrideSystem.Web.Pages.MyClassesModel
+@{
+    ViewData["Title"] = "My Classes";
+}
+<div class="page-header">
+    <div>
+        <h1>My Classes &amp; Responsibilities</h1>
+        <p>Your roles at CarePride Academy</p>
+    </div>
+</div>
+
+<div class="panel" style="padding: 20px 24px; margin-bottom: 24px;">
+    <h2 class="section-title" style="margin-top: 0;">Class Teacher Role</h2>
+    @if (Model.ClassTeacherOf == null)
+    {
+        <p class="cp-muted">You are not currently a class teacher.</p>
+    }
+    else
+    {
+        <div class="detail-row"><strong>Class</strong><span>@Model.ClassTeacherOf.ClassName</span></div>
+        <div class="detail-row"><strong>Academic Year</strong><span>2026</span></div>
+        <div class="detail-row"><strong>Role</strong><span>Primary Class Teacher</span></div>
+    }
+</div>
+
+<div class="panel" style="padding: 20px 24px; margin-bottom: 24px;">
+    <h2 class="section-title" style="margin-top: 0;">Subjects I Teach</h2>
+    @if (Model.Subjects.Count == 0)
+    {
+        <p class="cp-muted">You are not currently teaching any subjects.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr><th>Subject</th><th>Code</th><th>Class</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.Subjects)
+                {
+                    <tr>
+                        <td>@s.SubjectName</td>
+                        <td>@s.SubjectCode</td>
+                        <td>@s.ClassName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@if (Model.ClassTeacherOf != null)
+{
+    <h2 class="section-title">Students in @Model.ClassTeacherOf.ClassName</h2>
+    <div class="panel">
+        @if (Model.ClassStudents.Count == 0)
+        {
+            <div class="empty-state"><span class="icon">◯</span><p>No students in your class yet.</p></div>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Admission No</th><th>Name</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var st in Model.ClassStudents)
+                    {
+                        <tr>
+                            <td>@st.AdmissionNumber</td>
+                            <td>@st.FirstName @st.LastName</td>
+                            <td><a class="btn-link" href="/Students/Details/@st.Id">View</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}

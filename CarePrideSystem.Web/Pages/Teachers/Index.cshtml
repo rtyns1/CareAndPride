@@ -1,0 +1,49 @@
+﻿@page
+@model CarePrideSystem.Web.Pages.Teachers.IndexModel
+@{
+    ViewData["Title"] = "Teachers";
+}
+<div class="page-header">
+    <div>
+        <h1>Teachers</h1>
+        <p>Teaching staff</p>
+    </div>
+</div>
+
+<div class="panel">
+    @if (Model.Error != null)
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+    else if (Model.Teachers.Count == 0)
+    {
+        <div class="empty-state">
+            <span class="icon">◯</span>
+            <p>No teachers yet.</p>
+            <small>Teachers added will appear here.</small>
+        </div>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr><th>Username</th><th>Full Name</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model.Teachers)
+                {
+                    <tr>
+                        <td>@t.Username</td>
+                        <td>@t.FullName</td>
+                        <td>
+                            @if (t.IsApproved && t.IsActive) { <span class="badge badge-approved">Active</span> }
+                            else if (!t.IsApproved) { <span class="badge badge-pending">Pending</span> }
+                            else { <span class="badge badge-inactive">Inactive</span> }
+                        </td>
+                        <td><a class="btn-link" href="/Teachers/Details/@t.Id">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

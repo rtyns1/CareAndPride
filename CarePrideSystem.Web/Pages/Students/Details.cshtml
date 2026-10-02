@@ -1,0 +1,65 @@
+﻿@page "{id:guid}"
+@model CarePrideSystem.Web.Pages.Students.DetailsModel
+@{
+    ViewData["Title"] = "Student Details";
+}
+@if (Model.Student == null)
+{
+    <div class="alert alert-danger">Student not found.</div>
+    <a class="btn btn-secondary" href="/Students">Back</a>
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <h1>@Model.Student.FirstName @Model.Student.LastName</h1>
+            <p>Admission: @Model.Student.AdmissionNumber</p>
+        </div>
+        <a class="btn btn-secondary" href="/Students">Back to Students</a>
+    </div>
+
+    <div class="panel" style="padding: 8px 24px; margin-bottom: 24px;">
+        <div class="detail-row"><strong>Date of Birth</strong><span>@Model.Student.DateOfBirth.ToString("yyyy-MM-dd")</span></div>
+        <div class="detail-row"><strong>Class</strong><span>@Model.ClassName</span></div>
+        <div class="detail-row"><strong>Medical Conditions</strong><span>@(string.IsNullOrEmpty(Model.Student.MedicalConditions) ? "None" : Model.Student.MedicalConditions)</span></div>
+        <div class="detail-row"><strong>Status</strong><span>@(Model.Student.IsArchived ? "Archived" : "Active")</span></div>
+        <div class="detail-row"><strong>Enrolled</strong><span>@Model.Student.CreatedAtUtc.ToString("yyyy-MM-dd")</span></div>
+    </div>
+
+    <h2 class="section-title">Grades</h2>
+    <div class="panel">
+        @if (Model.Grades.Count == 0)
+        {
+            <div class="empty-state">
+                <span class="icon">◯</span>
+                <p>No grades recorded yet.</p>
+            </div>
+        }
+        else
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Term</th>
+                        <th>Assessment</th>
+                        <th>Score</th>
+                        <th>Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var g in Model.Grades)
+                    {
+                        <tr>
+                            <td>@g.SubjectName <small class="text-muted">(@g.SubjectCode)</small></td>
+                            <td>@g.Term</td>
+                            <td>@g.AssessmentType</td>
+                            <td>@g.Score / @g.MaxScore</td>
+                            <td><span class="badge badge-approved">@g.GradeLetter</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}

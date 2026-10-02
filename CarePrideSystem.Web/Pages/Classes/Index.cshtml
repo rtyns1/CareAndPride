@@ -1,0 +1,45 @@
+﻿@page
+@model CarePrideSystem.Web.Pages.Classes.IndexModel
+@{
+    ViewData["Title"] = "Classes";
+}
+<div class="page-header">
+    <div>
+        <h1>Classes</h1>
+        <p>PP1, PP2, Year 1 through Year 13</p>
+    </div>
+</div>
+
+<div class="panel">
+    @if (Model.Error != null)
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+    else if (Model.Classes.Count == 0)
+    {
+        <div class="empty-state">
+            <span class="icon">◯</span>
+            <p>No classes yet.</p>
+            <small>Classes added will appear here.</small>
+        </div>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr><th>Name</th><th>Grade Level</th><th>Capacity</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Classes)
+                {
+                    <tr>
+                        <td>@c.Name</td>
+                        <td>@c.GradeLevel</td>
+                        <td>@c.Capacity</td>
+                        <td><a class="btn-link" href="/Classes/Details/@c.Id">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

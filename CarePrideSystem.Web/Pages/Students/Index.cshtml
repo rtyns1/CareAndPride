@@ -1,0 +1,50 @@
+﻿@page
+@model CarePrideSystem.Web.Pages.Students.IndexModel
+@{
+    ViewData["Title"] = "Students";
+}
+<div class="page-header">
+    <div>
+        <h1>Students</h1>
+        <p>All enrolled students</p>
+    </div>
+</div>
+
+<div class="panel">
+    @if (Model.Error != null)
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+    else if (Model.Students.Count == 0)
+    {
+        <div class="empty-state">
+            <span class="icon">◯</span>
+            <p>No students yet.</p>
+            <small>Students added will appear here.</small>
+        </div>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Admission No</th>
+                    <th>Name</th>
+                    <th>Date of Birth</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.Students)
+                {
+                    <tr>
+                        <td>@s.AdmissionNumber</td>
+                        <td>@s.FirstName @s.LastName</td>
+                        <td>@s.DateOfBirth.ToString("yyyy-MM-dd")</td>
+                        <td><a class="btn-link" href="/Students/Details/@s.Id">View</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

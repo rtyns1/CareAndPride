@@ -1,0 +1,43 @@
+﻿@page
+@model CarePrideSystem.Web.Pages.Subjects.IndexModel
+@{
+    ViewData["Title"] = "Subjects";
+}
+<div class="page-header">
+    <div>
+        <h1>Subjects</h1>
+        <p>All subjects offered</p>
+    </div>
+</div>
+
+<div class="panel">
+    @if (Model.Error != null)
+    {
+        <div class="alert alert-danger">@Model.Error</div>
+    }
+    else if (Model.Subjects.Count == 0)
+    {
+        <div class="empty-state">
+            <span class="icon">◯</span>
+            <p>No subjects yet.</p>
+            <small>Subjects added will appear here.</small>
+        </div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Status</th></tr></thead>
+            <tbody>
+                @foreach (var s in Model.Subjects)
+                {
+                    <tr>
+                        <td>@s.Code</td>
+                        <td>@s.Name</td>
+                        <td>@s.Description</td>
+                        <td>@(s.IsActive ? "Active" : "Inactive")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

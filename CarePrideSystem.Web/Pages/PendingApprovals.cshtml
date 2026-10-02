@@ -1,0 +1,53 @@
+﻿@page
+@model CarePrideSystem.Web.Pages.PendingApprovalsModel
+@{
+    ViewData["Title"] = "Pending Approvals";
+}
+<div class="page-header">
+    <div>
+        <h1>Pending Approvals</h1>
+        <p>New accounts awaiting your decision</p>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Success))
+{
+    <div class="alert alert-success">@Model.Success</div>
+}
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="alert alert-danger">@Model.Error</div>
+}
+
+<div class="panel">
+    @if (Model.Users.Count == 0)
+    {
+        <div class="empty-state"><span class="icon">◯</span><p>No pending approvals.</p></div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Username</th><th>Full Name</th><th>Role</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var u in Model.Users)
+                {
+                    <tr>
+                        <td>@u.Username</td>
+                        <td>@u.FullName</td>
+                        <td>@u.Role</td>
+                        <td>
+                            <form method="post" asp-page-handler="Approve" style="display:inline;">
+                                <input type="hidden" name="id" value="@u.Id" />
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form method="post" asp-page-handler="Reject" style="display:inline; margin-left:6px;">
+                                <input type="hidden" name="id" value="@u.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

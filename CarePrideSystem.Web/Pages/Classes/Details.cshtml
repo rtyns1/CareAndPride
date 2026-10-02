@@ -1,0 +1,74 @@
+﻿@page "{id:guid}"
+@model CarePrideSystem.Web.Pages.Classes.DetailsModel
+@{
+    ViewData["Title"] = "Class Details";
+}
+@if (Model.Class == null)
+{
+    <div class="alert alert-danger">Class not found.</div>
+    <a class="btn btn-secondary" href="/Classes">Back</a>
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <h1>@Model.Class.Name</h1>
+            <p>Grade Level @Model.Class.GradeLevel</p>
+        </div>
+        <a class="btn btn-secondary" href="/Classes">Back to Classes</a>
+    </div>
+
+    <div class="panel" style="padding: 8px 24px; margin-bottom: 24px;">
+        <div class="detail-row"><strong>Name</strong><span>@Model.Class.Name</span></div>
+        <div class="detail-row"><strong>Grade Level</strong><span>@Model.Class.GradeLevel</span></div>
+        <div class="detail-row"><strong>Capacity</strong><span>@Model.Class.Capacity</span></div>
+        <div class="detail-row"><strong>Active</strong><span>@(Model.Class.IsActive ? "Yes" : "No")</span></div>
+    </div>
+
+    <h2 class="section-title">Students in this Class</h2>
+    <div class="panel">
+        @if (Model.Students.Count == 0)
+        {
+            <div class="empty-state"><span class="icon">◯</span><p>No students enrolled yet.</p></div>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Admission No</th><th>Name</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var s in Model.Students)
+                    {
+                        <tr>
+                            <td>@s.AdmissionNumber</td>
+                            <td>@s.FirstName @s.LastName</td>
+                            <td><a class="btn-link" href="/Students/Details/@s.Id">View</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    <h2 class="section-title">Teachers for this Class</h2>
+    <div class="panel">
+        @if (Model.ClassTeachers.Count == 0)
+        {
+            <div class="empty-state"><span class="icon">◯</span><p>No teachers assigned yet.</p></div>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Teacher ID</th><th>Type</th></tr></thead>
+                <tbody>
+                    @foreach (var ct in Model.ClassTeachers)
+                    {
+                        <tr>
+                            <td><a class="btn-link" href="/Teachers/Details/@ct.TeacherId">@ct.TeacherId</a></td>
+                            <td>@(ct.IsPrimary ? "Primary Class Teacher" : "Assistant")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}
