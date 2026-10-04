@@ -41,8 +41,9 @@
                     <a class="@NavClass("/Subjects")" href="/Subjects">Subjects</a>
                 }
                 @if (User.IsInRole("Admin"))
-                {
-                    <div class="app-nav-section">Administration</div>
+                {                <a class="@NavClass("/MyProfile")" href="/MyProfile">My Profile</a>
+                <a class="@NavClass("/Account/ChangePassword")" href="/Account/ChangePassword">Change Password</a>
+                <div class="app-nav-section">Administration</div>
                     <a class="@NavClass("/Users")" href="/Users">Users</a>
                     <a class="@NavClass("/PendingApprovals")" href="/PendingApprovals">Pending Approvals</a>
                 }
@@ -72,4 +73,5 @@ else
 }
 </body>
 </html>
+
 

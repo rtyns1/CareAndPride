@@ -1,0 +1,63 @@
+﻿@page
+@model RegisterModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Account - CarePride Academy</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="login-body">
+    <div class="login-card">
+        <div class="login-brand">
+            <div class="login-badge">CP</div>
+            <h1>CarePride</h1>
+            <div class="login-subtitle">Create Teacher Account</div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger py-2 mb-3">@Model.ErrorMessage</div>
+        }
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <div class="alert alert-success py-2 mb-3">@Model.SuccessMessage</div>
+        }
+
+        @if (string.IsNullOrEmpty(Model.SuccessMessage))
+        {
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <div class="form-row">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="Username" value="@Model.Username" autocomplete="off" autofocus />
+                </div>
+                <div class="form-row">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="Email" value="@Model.Email" autocomplete="off" />
+                </div>
+                <div class="form-row">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" name="FullName" value="@Model.FullName" autocomplete="off" />
+                </div>
+                <div class="form-row">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="Password" autocomplete="new-password" />
+                </div>
+                <button type="submit" class="btn-login">Create Account</button>
+            </form>
+        }
+
+        <div style="text-align:center; margin-top:20px; font-size:13px;">
+            <a href="/Login" style="color: var(--maroon); font-weight:600; text-decoration:none;">
+                Already have an account? Sign in
+            </a>
+        </div>
+    </div>
+</body>
+</html>

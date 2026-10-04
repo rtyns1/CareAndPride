@@ -1,0 +1,52 @@
+﻿@page
+@model CarePrideSystem.Web.Pages.Users.CreateModel
+@{
+    ViewData["Title"] = "New User";
+}
+<div class="page-header">
+    <div>
+        <h1>New User</h1>
+        <p>Create an account for a staff member</p>
+    </div>
+    <a class="btn btn-secondary" href="/Users">Back to Users</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="panel" style="padding: 28px; max-width: 720px;">
+    <form method="post">
+        <div class="form-row">
+            <label>Username</label>
+            <input type="text" name="Username" value="@Model.Username" autocomplete="off" />
+        </div>
+        <div class="form-row">
+            <label>Email</label>
+            <input type="email" name="Email" value="@Model.Email" autocomplete="off" />
+        </div>
+        <div class="form-row">
+            <label>Full Name</label>
+            <input type="text" name="FullName" value="@Model.FullName" autocomplete="off" />
+        </div>
+        <div class="form-row">
+            <label>Role</label>
+            <select name="Role">
+                @foreach (var r in Enum.GetValues<UserRole>())
+                {
+                    <option value="@((int)r)" selected="@(r == Model.Role)">@r</option>
+                }
+            </select>
+        </div>
+        <div class="form-row">
+            <label>Password</label>
+            <input type="password" name="Password" autocomplete="new-password" />
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button type="submit" class="btn">Create User</button>
+            <a class="btn btn-secondary" href="/Users">Cancel</a>
+        </div>
+    </form>
+</div>

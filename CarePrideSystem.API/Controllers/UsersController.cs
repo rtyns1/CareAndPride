@@ -9,38 +9,42 @@ namespace CarePrideSystem.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IMediator _mediator;
-
         public UsersController(IMediator mediator) { _mediator = mediator; }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Guid>> CreateUser(CreateUserDto dto)
         {
             var command = new CreateUserCommand
             {
-                Username = dto.Username, Email = dto.Email, FullName = dto.FullName,
-                Role = dto.Role, Password = dto.Password
+                Username = dto.Username, Email = dto.Email,
+                FullName = dto.FullName, Role = dto.Role, Password = dto.Password
             };
             var userId = await _mediator.Send(command);
             return CreatedAtAction(nameof(GetUser), new { id = userId }, userId);
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Secretary,Teacher")]
         public async Task<ActionResult<UserDto>> GetUser(Guid id)
             => Ok(await _mediator.Send(new GetUserQuery { Id = id }));
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Secretary,Teacher")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
             => Ok(await _mediator.Send(new GetAllUsersQuery()));
 
         [HttpGet("pending")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetPendingApprovals()
             => Ok(await _mediator.Send(new GetPendingApprovalQuery()));
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUser(Guid id, UpdateUserDto dto)
         {
             await _mediator.Send(new UpdateUserCommand { Id = id, FullName = dto.FullName, Email = dto.Email });
@@ -48,6 +52,7 @@ namespace CarePrideSystem.API.Controllers
         }
 
         [HttpPost("{id}/approve")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveUser(Guid id)
         {
             await _mediator.Send(new ApproveUserCommand { Id = id });
@@ -55,6 +60,7 @@ namespace CarePrideSystem.API.Controllers
         }
 
         [HttpPost("{id}/reject")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RejectUser(Guid id)
         {
             await _mediator.Send(new RejectUserCommand { Id = id });
@@ -62,6 +68,7 @@ namespace CarePrideSystem.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
             await _mediator.Send(new DeleteUserCommand { Id = id });

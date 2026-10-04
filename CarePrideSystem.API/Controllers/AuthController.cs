@@ -11,24 +11,43 @@ namespace CarePrideSystem.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;
-
-        public AuthController(IMediator mediator)
-        {
-            _mediator = mediator;
-        }
+        public AuthController(IMediator mediator) { _mediator = mediator; }
 
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<ActionResult<TokenResponseDto>> Login(LoginDto dto)
         {
-            var command = new LoginCommand
-            {
-                Username = dto.Username,
-                Password = dto.Password
-            };
-
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(new LoginCommand { Username = dto.Username, Password = dto.Password });
             return Ok(result);
+        }
+
+        [HttpPost("register")]
+        [AllowAnonymous]
+        public async Task<ActionResult<Guid>> Register(RegisterDto dto)
+        {
+            var id = await _mediator.Send(new RegisterTeacherCommand
+            {
+                Username = dto.Username, Email = dto.Email,
+                FullName = dto.FullName, Password = dto.Password
+            });
+            return Ok(id);
+        }
+
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+        {
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+
+            await _mediator.Send(new ChangePasswordCommand
+            {
+                UserId = userId,
+                CurrentPassword = dto.CurrentPassword,
+                NewPassword = dto.NewPassword
+            });
+            return NoContent();
         }
 
         [HttpGet("me")]
@@ -39,7 +58,6 @@ namespace CarePrideSystem.API.Controllers
             var username = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
             var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
             var fullName = User.FindFirst("FullName")?.Value;
-
             return Ok(new { userId, username, role, fullName });
         }
     }

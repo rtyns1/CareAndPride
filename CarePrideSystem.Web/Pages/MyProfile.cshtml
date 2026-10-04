@@ -1,0 +1,66 @@
+﻿@page
+@model CarePrideSystem.Web.Pages.MyProfileModel
+@{
+    ViewData["Title"] = "My Profile";
+    var classLookup = Model.Classes.ToDictionary(c => c.Id, c => c.Name);
+    var subjectLookup = Model.Subjects.ToDictionary(s => s.Id, s => s.Name);
+}
+<div class="page-header">
+    <div>
+        <h1>My Profile</h1>
+        <p>Your roles and assignments</p>
+    </div>
+</div>
+
+<div class="panel" style="padding: 8px 24px; margin-bottom: 24px;">
+    <div class="detail-row"><strong>Username</strong><span>@Model.CurrentUser?.Username</span></div>
+    <div class="detail-row"><strong>Full Name</strong><span>@Model.CurrentUser?.FullName</span></div>
+    <div class="detail-row"><strong>Email</strong><span>@Model.CurrentUser?.Email</span></div>
+    <div class="detail-row"><strong>Role</strong><span>@Model.CurrentUser?.Role</span></div>
+</div>
+
+<h2 class="section-title">I am class teacher of</h2>
+<div class="panel">
+    @if (Model.ClassAssignments.Count == 0)
+    {
+        <div class="empty-state"><span class="icon">◯</span><p>Not assigned to any class.</p></div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Class</th><th>Type</th></tr></thead>
+            <tbody>
+                @foreach (var ct in Model.ClassAssignments)
+                {
+                    <tr>
+                        <td>@(classLookup.TryGetValue(ct.ClassId, out var cn) ? cn : ct.ClassId.ToString())</td>
+                        <td>@(ct.IsPrimary ? "Primary Class Teacher" : "Assistant")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<h2 class="section-title">I teach</h2>
+<div class="panel">
+    @if (Model.SubjectAssignments.Count == 0)
+    {
+        <div class="empty-state"><span class="icon">◯</span><p>Not teaching any subject.</p></div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Subject</th><th>Class</th></tr></thead>
+            <tbody>
+                @foreach (var ts in Model.SubjectAssignments)
+                {
+                    <tr>
+                        <td>@(subjectLookup.TryGetValue(ts.SubjectId, out var sn) ? sn : ts.SubjectId.ToString())</td>
+                        <td>@(classLookup.TryGetValue(ts.ClassId, out var cn2) ? cn2 : ts.ClassId.ToString())</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

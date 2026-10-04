@@ -1,8 +1,6 @@
-﻿using MediatR;
-
-namespace CarePrideSystem.Application.Features.Auth.AuthCommands
+﻿namespace CarePrideSystem.Application.DTOs.Auth
 {
-    public class RegisterTeacherCommand : IRequest<Guid>
+    public class RegisterDto
     {
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;

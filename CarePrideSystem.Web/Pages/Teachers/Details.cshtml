@@ -2,6 +2,8 @@
 @model CarePrideSystem.Web.Pages.Teachers.DetailsModel
 @{
     ViewData["Title"] = "Teacher Details";
+    var classLookup = Model.Classes.ToDictionary(c => c.Id, c => c.Name);
+    var subjectLookup = Model.Subjects.ToDictionary(s => s.Id, s => s.Name);
 }
 @if (Model.Teacher == null)
 {
@@ -18,11 +20,128 @@ else
         <a class="btn btn-secondary" href="/Teachers">Back to Teachers</a>
     </div>
 
-    <div class="panel" style="padding: 8px 24px;">
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success">@Model.SuccessMessage</div>
+    }
+
+    <div class="panel" style="padding: 8px 24px; margin-bottom: 24px;">
         <div class="detail-row"><strong>Username</strong><span>@Model.Teacher.Username</span></div>
         <div class="detail-row"><strong>Email</strong><span>@Model.Teacher.Email</span></div>
         <div class="detail-row"><strong>Role</strong><span>@Model.Teacher.Role</span></div>
         <div class="detail-row"><strong>Status</strong><span>@(Model.Teacher.IsApproved ? "Approved" : "Pending Approval")</span></div>
         <div class="detail-row"><strong>Active</strong><span>@(Model.Teacher.IsActive ? "Yes" : "No")</span></div>
+    </div>
+
+    <h2 class="section-title">Class Teacher Assignments</h2>
+    <div class="panel" style="padding: 20px; margin-bottom: 24px;">
+        @if (Model.ClassAssignments.Count == 0)
+        {
+            <p class="cp-muted">Not a class teacher for any class.</p>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Class</th><th>Role</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var ct in Model.ClassAssignments)
+                    {
+                        <tr>
+                            <td>@(classLookup.TryGetValue(ct.ClassId, out var cn) ? cn : ct.ClassId.ToString())</td>
+                            <td>@(ct.IsPrimary ? "Primary Class Teacher" : "Assistant")</td>
+                            <td>
+                                <form method="post" asp-page-handler="RemoveClassTeacher" style="display:inline;">
+                                    <input type="hidden" name="classId" value="@ct.ClassId" />
+                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (Model.Classes.Count > 0)
+        {
+            <form method="post" asp-page-handler="AddClassTeacher" style="margin-top:18px; display:flex; gap:10px; align-items:end; flex-wrap:wrap;">
+                <div class="form-row" style="margin:0; flex:1; min-width:220px;">
+                    <label>Assign to class</label>
+                    <select name="classId" required>
+                        <option value="">-- Select class --</option>
+                        @foreach (var c in Model.Classes)
+                        {
+                            <option value="@c.Id">@c.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-row" style="margin:0;">
+                    <label>
+                        <input type="checkbox" name="isPrimary" value="true" /> Primary
+                    </label>
+                </div>
+                <button type="submit" class="btn" style="height:42px;">Assign</button>
+            </form>
+        }
+    </div>
+
+    <h2 class="section-title">Subject Teacher Assignments</h2>
+    <div class="panel" style="padding: 20px;">
+        @if (Model.SubjectAssignments.Count == 0)
+        {
+            <p class="cp-muted">Not teaching any subject.</p>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Subject</th><th>Class</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var ts in Model.SubjectAssignments)
+                    {
+                        <tr>
+                            <td>@(subjectLookup.TryGetValue(ts.SubjectId, out var sn) ? sn : ts.SubjectId.ToString())</td>
+                            <td>@(classLookup.TryGetValue(ts.ClassId, out var cn2) ? cn2 : ts.ClassId.ToString())</td>
+                            <td>
+                                <form method="post" asp-page-handler="RemoveSubject" style="display:inline;">
+                                    <input type="hidden" name="subjectId" value="@ts.SubjectId" />
+                                    <input type="hidden" name="classId" value="@ts.ClassId" />
+                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (Model.Subjects.Count > 0 && Model.Classes.Count > 0)
+        {
+            <form method="post" asp-page-handler="AddSubjectTeacher" style="margin-top:18px; display:flex; gap:10px; align-items:end; flex-wrap:wrap;">
+                <div class="form-row" style="margin:0; flex:1; min-width:200px;">
+                    <label>Subject</label>
+                    <select name="subjectId" required>
+                        <option value="">-- Select subject --</option>
+                        @foreach (var s in Model.Subjects)
+                        {
+                            <option value="@s.Id">@s.Name (@s.Code)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-row" style="margin:0; flex:1; min-width:200px;">
+                    <label>Class</label>
+                    <select name="classId" required>
+                        <option value="">-- Select class --</option>
+                        @foreach (var c in Model.Classes)
+                        {
+                            <option value="@c.Id">@c.Name</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn" style="height:42px;">Assign</button>
+            </form>
+        }
     </div>
 }
