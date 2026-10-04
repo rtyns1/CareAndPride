@@ -1,0 +1,42 @@
+﻿@page "{id:guid}"
+@model CarePrideSystem.Web.Pages.Students.EditModel
+@{
+    ViewData["Title"] = "Edit Student";
+}
+<div class="page-header">
+    <div>
+        <h1>Edit Student</h1>
+        <p>@Model.FirstName @Model.LastName</p>
+    </div>
+    <a class="btn btn-secondary" href="/Students/Details/@Model.Id">Back</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="panel" style="padding: 28px; max-width: 720px;">
+    <form method="post">
+        <div class="form-row">
+            <label>First Name</label>
+            <input type="text" name="FirstName" value="@Model.FirstName" required />
+        </div>
+        <div class="form-row">
+            <label>Last Name</label>
+            <input type="text" name="LastName" value="@Model.LastName" required />
+        </div>
+        <div class="form-row">
+            <label>Date of Birth</label>
+            <input type="date" name="DateOfBirth" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" required />
+        </div>
+        <div class="form-row">
+            <label>Medical Conditions</label>
+            <input type="text" name="MedicalConditions" value="@Model.MedicalConditions" />
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button type="submit" class="btn">Save Changes</button>
+            <a class="btn btn-secondary" href="/Students/Details/@Model.Id">Cancel</a>
+        </div>
+    </form>
+</div>

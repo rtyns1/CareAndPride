@@ -2,6 +2,15 @@
 @model CarePrideSystem.Web.Pages.Students.DetailsModel
 @{
     ViewData["Title"] = "Student Details";
+    var subjectLookup = Model.Subjects.ToDictionary(s => s.Id, s => s.Name);
+    var classLookup = Model.Classes.ToDictionary(c => c.Id, c => c.Name);
+    var canEdit = User.IsInRole("Admin") || User.IsInRole("Secretary");
+    var canAddGrade = User.IsInRole("Admin") || Model.CanAddGrade;
+    decimal avg = 0m;
+    if (Model.VisibleGrades.Count > 0)
+    {
+        avg = Model.VisibleGrades.Average(g => (g.Score / g.MaxScore) * 100m);
+    }
 }
 @if (Model.Student == null)
 {
@@ -13,53 +22,125 @@ else
     <div class="page-header">
         <div>
             <h1>@Model.Student.FirstName @Model.Student.LastName</h1>
-            <p>Admission: @Model.Student.AdmissionNumber</p>
+            <p>Admission: @Model.Student.AdmissionNumber · Class: @(classLookup.TryGetValue(Model.Student.ClassId, out var cn) ? cn : "N/A")</p>
         </div>
-        <a class="btn btn-secondary" href="/Students">Back to Students</a>
+        <div style="display:flex; gap:10px;">
+            @if (canEdit)
+            {
+                <a class="btn btn-secondary" href="/Students/Edit/@Model.Student.Id">Edit</a>
+                <form method="post" asp-page-handler="Delete" style="display:inline;" onsubmit="return confirm('Archive this student?');">
+                    <button type="submit" class="btn btn-danger">Archive</button>
+                </form>
+            }
+            <a class="btn btn-secondary" href="/Students">Back to Students</a>
+        </div>
     </div>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success">@Model.SuccessMessage</div>
+    }
 
     <div class="panel" style="padding: 8px 24px; margin-bottom: 24px;">
         <div class="detail-row"><strong>Date of Birth</strong><span>@Model.Student.DateOfBirth.ToString("yyyy-MM-dd")</span></div>
-        <div class="detail-row"><strong>Class</strong><span>@Model.ClassName</span></div>
         <div class="detail-row"><strong>Medical Conditions</strong><span>@(string.IsNullOrEmpty(Model.Student.MedicalConditions) ? "None" : Model.Student.MedicalConditions)</span></div>
         <div class="detail-row"><strong>Status</strong><span>@(Model.Student.IsArchived ? "Archived" : "Active")</span></div>
         <div class="detail-row"><strong>Enrolled</strong><span>@Model.Student.CreatedAtUtc.ToString("yyyy-MM-dd")</span></div>
     </div>
 
-    <h2 class="section-title">Grades</h2>
-    <div class="panel">
-        @if (Model.Grades.Count == 0)
-        {
-            <div class="empty-state">
-                <span class="icon">◯</span>
-                <p>No grades recorded yet.</p>
+    @if (Model.VisibleGrades.Count > 0)
+    {
+        <div class="panel" style="padding: 20px; margin-bottom: 24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="margin:0;">Academic History</h2>
+                <div style="font-size:22px; font-weight:700; color: var(--maroon);">
+                    Average: @avg.ToString("0.0")%
+                </div>
             </div>
-        }
-        else
-        {
-            <table>
+            <table style="margin-top:16px;">
                 <thead>
-                    <tr>
-                        <th>Subject</th>
-                        <th>Term</th>
-                        <th>Assessment</th>
-                        <th>Score</th>
-                        <th>Grade</th>
-                    </tr>
+                    <tr><th>Subject</th><th>Exam</th><th>Term</th><th>Score</th><th>Grade</th><th>Remarks</th></tr>
                 </thead>
                 <tbody>
-                    @foreach (var g in Model.Grades)
+                    @foreach (var g in Model.VisibleGrades.OrderBy(g => g.SubjectId).ThenBy(g => g.ExamType))
                     {
                         <tr>
-                            <td>@g.SubjectName <small class="text-muted">(@g.SubjectCode)</small></td>
+                            <td>@(subjectLookup.TryGetValue(g.SubjectId, out var sn) ? sn : "—")</td>
+                            <td>@g.ExamType</td>
                             <td>@g.Term</td>
-                            <td>@g.AssessmentType</td>
-                            <td>@g.Score / @g.MaxScore</td>
-                            <td><span class="badge badge-approved">@g.GradeLetter</span></td>
+                            <td>@g.Score.ToString("0.##") / @g.MaxScore.ToString("0.##")</td>
+                            <td><strong>@g.GradeLetter</strong></td>
+                            <td>@g.Remarks</td>
                         </tr>
                     }
                 </tbody>
             </table>
-        }
-    </div>
+        </div>
+    }
+    else
+    {
+        <div class="panel" style="padding: 20px; margin-bottom: 24px;">
+            <div class="empty-state">
+                <span class="icon">◯</span>
+                <p>No grades recorded yet.</p>
+                <small>@(User.IsInRole("Teacher") ? "You can only see grades for subjects you teach in this class." : "")</small>
+            </div>
+        </div>
+    }
+
+    @if (canAddGrade)
+    {
+        <h2 class="section-title">Record a Grade / Assignment / Comment</h2>
+        <div class="panel" style="padding: 24px;">
+            <form method="post" asp-page-handler="AddGrade" style="display:flex; flex-wrap:wrap; gap:14px;">
+                <div class="form-row" style="flex:1; min-width:180px; margin:0;">
+                    <label>Subject</label>
+                    <select name="subjectId" required>
+                        <option value="">-- Select --</option>
+                        @foreach (var s in Model.AllowedSubjectsForGrade)
+                        {
+                            <option value="@s.Id">@s.Name (@s.Code)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-row" style="flex:1; min-width:150px; margin:0;">
+                    <label>Type</label>
+                    <select name="examType" required>
+                        <option value="Assignment">Assignment</option>
+                        <option value="CAT">CAT</option>
+                        <option value="Midterm">Midterm</option>
+                        <option value="Endterm">Endterm</option>
+                        <option value="Comment">Comment only</option>
+                    </select>
+                </div>
+                <div class="form-row" style="flex:1; min-width:120px; margin:0;">
+                    <label>Term</label>
+                    <select name="term" required>
+                        <option value="Term 1">Term 1</option>
+                        <option value="Term 2">Term 2</option>
+                        <option value="Term 3">Term 3</option>
+                    </select>
+                </div>
+                <div class="form-row" style="flex:1; min-width:100px; margin:0;">
+                    <label>Score</label>
+                    <input type="number" step="0.01" name="score" value="0" />
+                </div>
+                <div class="form-row" style="flex:1; min-width:100px; margin:0;">
+                    <label>Max</label>
+                    <input type="number" step="0.01" name="maxScore" value="100" />
+                </div>
+                <div class="form-row" style="flex:2; min-width:220px; margin:0;">
+                    <label>Remarks / Comment</label>
+                    <input type="text" name="remarks" />
+                </div>
+                <div style="display:flex; align-items:end;">
+                    <button type="submit" class="btn">Save</button>
+                </div>
+            </form>
+        </div>
+    }
 }

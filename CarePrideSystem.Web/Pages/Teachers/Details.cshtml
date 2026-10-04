@@ -4,6 +4,7 @@
     ViewData["Title"] = "Teacher Details";
     var classLookup = Model.Classes.ToDictionary(c => c.Id, c => c.Name);
     var subjectLookup = Model.Subjects.ToDictionary(s => s.Id, s => s.Name);
+    var isAdmin = User.IsInRole("Admin");
 }
 @if (Model.Teacher == null)
 {
@@ -46,26 +47,29 @@ else
         else
         {
             <table>
-                <thead><tr><th>Class</th><th>Role</th><th></th></tr></thead>
+                <thead><tr><th>Class</th><th>Role</th>@if (isAdmin) { <th></th> }</tr></thead>
                 <tbody>
                     @foreach (var ct in Model.ClassAssignments)
                     {
                         <tr>
                             <td>@(classLookup.TryGetValue(ct.ClassId, out var cn) ? cn : ct.ClassId.ToString())</td>
                             <td>@(ct.IsPrimary ? "Primary Class Teacher" : "Assistant")</td>
-                            <td>
-                                <form method="post" asp-page-handler="RemoveClassTeacher" style="display:inline;">
-                                    <input type="hidden" name="classId" value="@ct.ClassId" />
-                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                </form>
-                            </td>
+                            @if (isAdmin)
+                            {
+                                <td>
+                                    <form method="post" asp-page-handler="RemoveClassTeacher" style="display:inline;">
+                                        <input type="hidden" name="classId" value="@ct.ClassId" />
+                                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                    </form>
+                                </td>
+                            }
                         </tr>
                     }
                 </tbody>
             </table>
         }
 
-        @if (Model.Classes.Count > 0)
+        @if (isAdmin && Model.Classes.Count > 0)
         {
             <form method="post" asp-page-handler="AddClassTeacher" style="margin-top:18px; display:flex; gap:10px; align-items:end; flex-wrap:wrap;">
                 <div class="form-row" style="margin:0; flex:1; min-width:220px;">
@@ -79,9 +83,7 @@ else
                     </select>
                 </div>
                 <div class="form-row" style="margin:0;">
-                    <label>
-                        <input type="checkbox" name="isPrimary" value="true" /> Primary
-                    </label>
+                    <label><input type="checkbox" name="isPrimary" value="true" /> Primary</label>
                 </div>
                 <button type="submit" class="btn" style="height:42px;">Assign</button>
             </form>
@@ -97,27 +99,30 @@ else
         else
         {
             <table>
-                <thead><tr><th>Subject</th><th>Class</th><th></th></tr></thead>
+                <thead><tr><th>Subject</th><th>Class</th>@if (isAdmin) { <th></th> }</tr></thead>
                 <tbody>
                     @foreach (var ts in Model.SubjectAssignments)
                     {
                         <tr>
                             <td>@(subjectLookup.TryGetValue(ts.SubjectId, out var sn) ? sn : ts.SubjectId.ToString())</td>
                             <td>@(classLookup.TryGetValue(ts.ClassId, out var cn2) ? cn2 : ts.ClassId.ToString())</td>
-                            <td>
-                                <form method="post" asp-page-handler="RemoveSubject" style="display:inline;">
-                                    <input type="hidden" name="subjectId" value="@ts.SubjectId" />
-                                    <input type="hidden" name="classId" value="@ts.ClassId" />
-                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                </form>
-                            </td>
+                            @if (isAdmin)
+                            {
+                                <td>
+                                    <form method="post" asp-page-handler="RemoveSubject" style="display:inline;">
+                                        <input type="hidden" name="subjectId" value="@ts.SubjectId" />
+                                        <input type="hidden" name="classId" value="@ts.ClassId" />
+                                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                    </form>
+                                </td>
+                            }
                         </tr>
                     }
                 </tbody>
             </table>
         }
 
-        @if (Model.Subjects.Count > 0 && Model.Classes.Count > 0)
+        @if (isAdmin && Model.Subjects.Count > 0 && Model.Classes.Count > 0)
         {
             <form method="post" asp-page-handler="AddSubjectTeacher" style="margin-top:18px; display:flex; gap:10px; align-items:end; flex-wrap:wrap;">
                 <div class="form-row" style="margin:0; flex:1; min-width:200px;">

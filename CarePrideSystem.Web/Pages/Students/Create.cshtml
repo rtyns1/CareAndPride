@@ -1,0 +1,55 @@
+﻿@page
+@model CarePrideSystem.Web.Pages.Students.CreateModel
+@{
+    ViewData["Title"] = "New Student";
+}
+<div class="page-header">
+    <div>
+        <h1>New Student</h1>
+        <p>Register a student into a class</p>
+    </div>
+    <a class="btn btn-secondary" href="/Students">Back</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="panel" style="padding: 28px; max-width: 720px;">
+    <p class="cp-muted" style="margin-bottom:20px;">
+        The admission number is generated automatically by the system in the format CP-YEAR-####.
+    </p>
+    <form method="post">
+        <div class="form-row">
+            <label>First Name</label>
+            <input type="text" name="FirstName" value="@Model.FirstName" required />
+        </div>
+        <div class="form-row">
+            <label>Last Name</label>
+            <input type="text" name="LastName" value="@Model.LastName" required />
+        </div>
+        <div class="form-row">
+            <label>Date of Birth</label>
+            <input type="date" name="DateOfBirth" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" required />
+        </div>
+        <div class="form-row">
+            <label>Class</label>
+            <select name="ClassId" required>
+                <option value="">-- Select class --</option>
+                @foreach (var c in Model.Classes)
+                {
+                    <option value="@c.Id" selected="@(c.Id == Model.ClassId)">@c.Name</option>
+                }
+            </select>
+        </div>
+        <div class="form-row">
+            <label>Medical Conditions (optional)</label>
+            <input type="text" name="MedicalConditions" value="@Model.MedicalConditions" />
+        </div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button type="submit" class="btn">Create Student</button>
+            <a class="btn btn-secondary" href="/Students">Cancel</a>
+        </div>
+    </form>
+</div>

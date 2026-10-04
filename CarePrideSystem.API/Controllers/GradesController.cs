@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using CarePrideSystem.Application.DTOs.Grades;
-using CarePrideSystem.Application.Features.Grades.GradesCommands;
+using CarePrideSystem.Application.Features.Grades.Commands;
 using CarePrideSystem.Application.Features.Grades.Queries;
 
 namespace CarePrideSystem.API.Controllers
@@ -12,26 +12,20 @@ namespace CarePrideSystem.API.Controllers
     [Authorize]
     public class GradesController : ControllerBase
     {
-        private readonly IMediator _m;
-        public GradesController(IMediator m) { _m = m; }
+        private readonly IMediator _mediator;
+        public GradesController(IMediator mediator) { _mediator = mediator; }
+
+        [HttpGet("student/{studentId}")]
+        [Authorize(Roles = "Admin,Secretary,Teacher")]
+        public async Task<ActionResult<IEnumerable<GradeDto>>> GetByStudent(Guid studentId)
+            => Ok(await _mediator.Send(new GetGradesByStudentQuery { StudentId = studentId }));
 
         [HttpPost]
         [Authorize(Roles = "Admin,Teacher")]
-        public async Task<ActionResult<Guid>> Create(CreateGradeDto dto)
+        public async Task<ActionResult<Guid>> Add(AddGradeCommand command)
         {
-            var id = await _m.Send(new CreateGradeCommand
-            {
-                StudentId = dto.StudentId, SubjectId = dto.SubjectId, ClassId = dto.ClassId,
-                TeacherId = dto.TeacherId, AcademicYearId = dto.AcademicYearId,
-                AssessmentType = dto.AssessmentType, Title = dto.Title,
-                Score = dto.Score, MaxScore = dto.MaxScore, Remarks = dto.Remarks
-            });
+            var id = await _mediator.Send(command);
             return Ok(id);
         }
-
-        [HttpGet("student/{studentId}")]
-        [Authorize(Roles = "Admin,Teacher,Secretary")]
-        public async Task<ActionResult<IEnumerable<GradeDto>>> ByStudent(Guid studentId)
-            => Ok(await _m.Send(new GetGradesByStudentQuery { StudentId = studentId }));
     }
 }

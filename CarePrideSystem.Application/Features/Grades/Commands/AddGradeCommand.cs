@@ -1,8 +1,9 @@
-﻿namespace CarePrideSystem.Application.DTOs.Grades
+﻿using MediatR;
+
+namespace CarePrideSystem.Application.Features.Grades.Commands
 {
-    public class GradeDto
+    public class AddGradeCommand : IRequest<Guid>
     {
-        public Guid Id { get; set; }
         public Guid StudentId { get; set; }
         public Guid SubjectId { get; set; }
         public Guid ClassId { get; set; }
@@ -11,8 +12,6 @@
         public string Term { get; set; } = string.Empty;
         public decimal Score { get; set; }
         public decimal MaxScore { get; set; }
-        public string GradeLetter { get; set; } = string.Empty;
         public string? Remarks { get; set; }
-        public DateTime RecordedAtUtc { get; set; }
     }
 }
