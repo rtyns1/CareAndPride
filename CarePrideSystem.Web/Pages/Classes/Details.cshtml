@@ -2,6 +2,8 @@
 @model CarePrideSystem.Web.Pages.Classes.DetailsModel
 @{
     ViewData["Title"] = "Class Details";
+    var subjectLookup = Model.Subjects.ToDictionary(s => s.Id, s => s.Name);
+    var canUpload = User.IsInRole("Admin") || User.IsInRole("Teacher");
 }
 @if (Model.Class == null)
 {
@@ -25,8 +27,58 @@ else
         <div class="detail-row"><strong>Active</strong><span>@(Model.Class.IsActive ? "Yes" : "No")</span></div>
     </div>
 
+    <h2 class="section-title">Teaching Materials for this Class</h2>
+    <div class="panel" style="margin-bottom: 24px; padding: 20px;">
+        <p class="cp-muted" style="margin-bottom:14px;">
+            Exam papers, CATs, assignments, question banks, and teacher notes stored against this class and its subjects.
+        </p>
+        @if (Model.Assignments.Count == 0)
+        {
+            <div class="empty-state">
+                <span class="icon">◯</span>
+                <p>No materials uploaded yet.</p>
+                <small>Teachers of this class can upload exam papers, question banks, and assignments here.</small>
+            </div>
+        }
+        else
+        {
+            <table>
+                <thead>
+                    <tr><th>Due</th><th>Type</th><th>Title</th><th>Subject</th><th>Max</th><th>File</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model.Assignments.OrderBy(a => a.DueDateUtc))
+                    {
+                        <tr>
+                            <td>@a.DueDateUtc.ToString("yyyy-MM-dd")</td>
+                            <td>@a.ExamType</td>
+                            <td>@a.Title</td>
+                            <td>@(subjectLookup.TryGetValue(a.SubjectId, out var sn) ? sn : "—")</td>
+                            <td>@a.MaxScore.ToString("0.##")</td>
+                            <td>
+                                @if (a.HasFile)
+                                {
+                                    <a class="btn-link" href="/Assignments/Download/@a.Id">Download</a>
+                                }
+                                else
+                                {
+                                    <span class="cp-muted">—</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (canUpload)
+        {
+            <a class="btn" href="/Assignments/Create?classId=@Model.Class.Id" style="margin-top:18px;">+ Upload Material</a>
+        }
+    </div>
+
     <h2 class="section-title">Students in this Class</h2>
-    <div class="panel">
+    <div class="panel" style="margin-bottom: 24px;">
         @if (Model.Students.Count == 0)
         {
             <div class="empty-state"><span class="icon">◯</span><p>No students enrolled yet.</p></div>

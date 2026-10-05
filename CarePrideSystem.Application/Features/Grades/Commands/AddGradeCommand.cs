@@ -8,10 +8,11 @@ namespace CarePrideSystem.Application.Features.Grades.Commands
         public Guid SubjectId { get; set; }
         public Guid ClassId { get; set; }
         public Guid RecordedByTeacherId { get; set; }
-        public string ExamType { get; set; } = string.Empty;
-        public string Term { get; set; } = string.Empty;
+        public Guid? AssignmentId { get; set; }
+        public string ExamType { get; set; } = "Assignment";
+        public string Term { get; set; } = "Term 1";
         public decimal Score { get; set; }
-        public decimal MaxScore { get; set; }
+        public decimal MaxScore { get; set; } = 100;
         public string? Remarks { get; set; }
     }
 }

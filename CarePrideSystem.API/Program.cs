@@ -35,6 +35,7 @@ builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
 
 builder.Services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<IFileStorageService, FileSystemStorageService>();
 
 builder.Services.AddMediatR(cfg =>
 {
@@ -91,4 +92,5 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
 

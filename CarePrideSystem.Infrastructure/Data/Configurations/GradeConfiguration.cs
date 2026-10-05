@@ -19,6 +19,7 @@ namespace CarePrideSystem.Infrastructure.Data.Configurations
             builder.HasIndex(g => new { g.StudentId, g.SubjectId, g.ExamType, g.Term });
             builder.HasIndex(g => g.ClassId);
             builder.HasIndex(g => g.RecordedByTeacherId);
+            builder.HasIndex(g => g.AssignmentId);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace CarePrideSystem.API.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin,Teacher")]
-        public async Task<ActionResult<Guid>> Add(AddGradeCommand command)
+        public async Task<ActionResult<Guid>> Add([FromBody] AddGradeCommand command)
         {
             var id = await _mediator.Send(command);
             return Ok(id);

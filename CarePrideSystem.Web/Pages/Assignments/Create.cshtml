@@ -1,0 +1,85 @@
+﻿@page
+@model CarePrideSystem.Web.Pages.Assignments.CreateModel
+@{
+    ViewData["Title"] = "Upload Material";
+}
+<div class="page-header">
+    <div>
+        <h1>Upload Assignment / Exam / Question Bank</h1>
+        <p>Store teaching materials against a class and subject. Visible to staff with access to that class.</p>
+    </div>
+    <a class="btn btn-secondary" href="/Classes/Details/@Model.ClassId">Back to Class</a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="panel" style="padding: 28px; max-width: 720px;">
+    <form method="post" enctype="multipart/form-data">
+        <div class="form-row">
+            <label>Title</label>
+            <input type="text" name="Title" value="@Model.Title" required placeholder="e.g. End of Term Chemistry Paper 1" />
+        </div>
+
+        <div class="form-row">
+            <label>Description (optional)</label>
+            <textarea name="Description" rows="3">@Model.Description</textarea>
+        </div>
+
+        <div class="form-row">
+            <label>Material Type</label>
+            <select name="ExamType">
+                <option value="Assignment">Assignment</option>
+                <option value="CAT">CAT</option>
+                <option value="Midterm">Midterm Exam</option>
+                <option value="Endterm">Endterm Exam</option>
+                <option value="QuestionBank">Question Bank</option>
+                <option value="Notes">Teacher Notes</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label>Subject</label>
+            <select name="SubjectId" required>
+                <option value="">-- Select subject --</option>
+                @foreach (var s in Model.Subjects)
+                {
+                    <option value="@s.Id" selected="@(s.Id == Model.SubjectId)">@s.Name (@s.Code)</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label>Class</label>
+            <select name="ClassId" required>
+                <option value="">-- Select class --</option>
+                @foreach (var c in Model.Classes)
+                {
+                    <option value="@c.Id" selected="@(c.Id == Model.ClassId)">@c.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-row">
+            <label>Due Date</label>
+            <input type="date" name="DueDate" value="@(Model.DueDate.ToString("yyyy-MM-dd"))" required />
+        </div>
+
+        <div class="form-row">
+            <label>Maximum Score</label>
+            <input type="number" step="0.01" name="MaxScore" value="@Model.MaxScore" required />
+        </div>
+
+        <div class="form-row">
+            <label>Attach File (PDF, Word, Image — optional)</label>
+            <input type="file" name="File" />
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button type="submit" class="btn">Save Material</button>
+            <a class="btn btn-secondary" href="/Classes/Details/@Model.ClassId">Cancel</a>
+        </div>
+    </form>
+</div>

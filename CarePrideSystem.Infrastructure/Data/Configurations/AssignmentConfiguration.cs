@@ -6,13 +6,19 @@ namespace CarePrideSystem.Infrastructure.Data.Configurations
 {
     public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
     {
-        public void Configure(EntityTypeBuilder<Assignment> b)
+        public void Configure(EntityTypeBuilder<Assignment> builder)
         {
-            b.ToTable("Assignments");
-            b.HasKey(a => a.Id);
-            b.Property(a => a.Title).IsRequired().HasMaxLength(200);
-            b.Property(a => a.Description).HasMaxLength(2000);
-            b.Property(a => a.MaxScore).HasPrecision(10, 2);
+            builder.ToTable("Assignments");
+            builder.HasKey(a => a.Id);
+            builder.Property(a => a.Title).IsRequired().HasMaxLength(200);
+            builder.Property(a => a.Description).HasMaxLength(2000);
+            builder.Property(a => a.ExamType).IsRequired().HasMaxLength(50);
+            builder.Property(a => a.MaxScore).HasColumnType("decimal(10,2)");
+            builder.Property(a => a.FilePath).HasMaxLength(500);
+            builder.Property(a => a.OriginalFileName).HasMaxLength(255);
+            builder.HasIndex(a => a.ClassId);
+            builder.HasIndex(a => a.SubjectId);
+            builder.HasIndex(a => a.TeacherId);
         }
     }
 }

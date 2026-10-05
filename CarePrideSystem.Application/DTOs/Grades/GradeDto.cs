@@ -7,6 +7,7 @@
         public Guid SubjectId { get; set; }
         public Guid ClassId { get; set; }
         public Guid RecordedByTeacherId { get; set; }
+        public Guid? AssignmentId { get; set; }
         public string ExamType { get; set; } = string.Empty;
         public string Term { get; set; } = string.Empty;
         public decimal Score { get; set; }

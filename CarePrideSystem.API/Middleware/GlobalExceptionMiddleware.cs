@@ -46,6 +46,11 @@ namespace CarePrideSystem.API.Middleware
                 _logger.LogWarning(ex, "Invalid operation");
                 await WriteResponse(context, 400, ex.Message);
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Forbidden");
+                await WriteResponse(context, 403, ex.Message);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unhandled exception");
@@ -61,3 +66,4 @@ namespace CarePrideSystem.API.Middleware
         }
     }
 }
+

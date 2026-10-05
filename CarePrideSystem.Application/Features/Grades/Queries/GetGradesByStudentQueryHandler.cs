@@ -16,6 +16,7 @@ namespace CarePrideSystem.Application.Features.Grades.Queries
             {
                 Id = g.Id, StudentId = g.StudentId, SubjectId = g.SubjectId,
                 ClassId = g.ClassId, RecordedByTeacherId = g.RecordedByTeacherId,
+                AssignmentId = g.AssignmentId,
                 ExamType = g.ExamType, Term = g.Term,
                 Score = g.Score, MaxScore = g.MaxScore,
                 GradeLetter = g.GradeLetter, Remarks = g.Remarks,

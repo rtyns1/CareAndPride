@@ -21,12 +21,24 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<AuthTokenHandler>();
+
+// Named client "api" — used by the download proxy page
+builder.Services.AddHttpClient("api", c =>
+{
+    var baseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5182/";
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = TimeSpan.FromSeconds(60);
+})
+.AddHttpMessageHandler<AuthTokenHandler>();
+
+// Typed client for general use
 builder.Services.AddHttpClient<ApiClient>(c =>
 {
     var baseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:5182/";
     c.BaseAddress = new Uri(baseUrl);
     c.Timeout = TimeSpan.FromSeconds(30);
-}).AddHttpMessageHandler<AuthTokenHandler>();
+})
+.AddHttpMessageHandler<AuthTokenHandler>();
 
 var app = builder.Build();
 

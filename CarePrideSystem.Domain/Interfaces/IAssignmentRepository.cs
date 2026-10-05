@@ -8,7 +8,11 @@ namespace CarePrideSystem.Domain.Interfaces
         Task<IEnumerable<Assignment>> GetByClassIdAsync(Guid classId);
         Task<IEnumerable<Assignment>> GetBySubjectIdAsync(Guid subjectId);
         Task<IEnumerable<Assignment>> GetByTeacherIdAsync(Guid teacherId);
+        Task<IEnumerable<Assignment>> GetByStudentClassAsync(Guid studentId);
         Task<IEnumerable<Assignment>> GetAllAsync();
-        Task AddAsync(Assignment a);
+        Task AddAsync(Assignment assignment);
+        Task UpdateAsync(Assignment assignment);
+        Task DeleteAsync(Guid id);
+        Task<bool> ExistsAsync(Guid id);
     }
 }

@@ -6,11 +6,6 @@
     var classLookup = Model.Classes.ToDictionary(c => c.Id, c => c.Name);
     var canEdit = User.IsInRole("Admin") || User.IsInRole("Secretary");
     var canAddGrade = User.IsInRole("Admin") || Model.CanAddGrade;
-    decimal avg = 0m;
-    if (Model.VisibleGrades.Count > 0)
-    {
-        avg = Model.VisibleGrades.Average(g => (g.Score / g.MaxScore) * 100m);
-    }
 }
 @if (Model.Student == null)
 {
@@ -52,38 +47,70 @@ else
         <div class="detail-row"><strong>Enrolled</strong><span>@Model.Student.CreatedAtUtc.ToString("yyyy-MM-dd")</span></div>
     </div>
 
-    @if (Model.VisibleGrades.Count > 0)
-    {
-        <div class="panel" style="padding: 20px; margin-bottom: 24px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 style="margin:0;">Academic History</h2>
-                <div style="font-size:22px; font-weight:700; color: var(--maroon);">
-                    Average: @avg.ToString("0.0")%
-                </div>
+    <h2 class="section-title">Assignments</h2>
+    <div class="panel" style="margin-bottom: 24px;">
+        @if (Model.Assignments.Count == 0)
+        {
+            <div class="empty-state">
+                <span class="icon">◯</span>
+                <p>No assignments for this class yet.</p>
+                <small>Assignments uploaded by teachers will appear here.</small>
             </div>
-            <table style="margin-top:16px;">
+        }
+        else
+        {
+            <table>
                 <thead>
-                    <tr><th>Subject</th><th>Exam</th><th>Term</th><th>Score</th><th>Grade</th><th>Remarks</th></tr>
+                    <tr>
+                        <th>Due</th>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Teacher</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
                 </thead>
                 <tbody>
-                    @foreach (var g in Model.VisibleGrades.OrderBy(g => g.SubjectId).ThenBy(g => g.ExamType))
+                    @foreach (var a in Model.Assignments.OrderBy(a => a.DueDateUtc))
                     {
+                        var graded = Model.GradesForAssignment.TryGetValue(a.Id, out var g);
+                        var overdue = !graded && a.DueDateUtc < DateTime.UtcNow;
                         <tr>
-                            <td>@(subjectLookup.TryGetValue(g.SubjectId, out var sn) ? sn : "—")</td>
-                            <td>@g.ExamType</td>
-                            <td>@g.Term</td>
-                            <td>@g.Score.ToString("0.##") / @g.MaxScore.ToString("0.##")</td>
-                            <td><strong>@g.GradeLetter</strong></td>
-                            <td>@g.Remarks</td>
+                            <td>@a.DueDateUtc.ToString("yyyy-MM-dd")</td>
+                            <td>@a.Title</td>
+                            <td>@(subjectLookup.TryGetValue(a.SubjectId, out var asn) ? asn : "—")</td>
+                            <td>@(Model.TeacherLookup.TryGetValue(a.TeacherId, out var tn) ? tn : "—")</td>
+                            <td>
+                                @if (graded)
+                                {
+                                    <span class="badge badge-approved">Graded: @g!.Score.ToString("0.##") / @g.MaxScore.ToString("0.##") (@g.GradeLetter)</span>
+                                }
+                                else if (overdue)
+                                {
+                                    <span class="badge badge-pending">Overdue</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-pending">Pending</span>
+                                }
+                            </td>
+                            <td>
+                                @if (a.HasFile)
+                                {
+                                    <a class="btn-link" href="/Assignments/Download/@a.Id">File</a>
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>
             </table>
-        </div>
-    }
-    else
+        }
+    </div>
+
+    <h2 class="section-title">Academic History</h2>
+    @if (Model.GradesByTerm.Count == 0)
     {
-        <div class="panel" style="padding: 20px; margin-bottom: 24px;">
+        <div class="panel" style="margin-bottom: 24px;">
             <div class="empty-state">
                 <span class="icon">◯</span>
                 <p>No grades recorded yet.</p>
@@ -91,10 +118,48 @@ else
             </div>
         </div>
     }
+    else
+    {
+        <div class="panel" style="padding: 20px; margin-bottom: 24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; color: var(--maroon);">Overall Average</h3>
+                <div style="font-size:22px; font-weight:700; color: var(--maroon);">
+                    @Model.OverallAverage.ToString("0.0")%
+                </div>
+            </div>
+        </div>
+
+        foreach (var term in Model.GradesByTerm.Keys.OrderByDescending(k => k))
+        {
+            var termGrades = Model.GradesByTerm[term];
+            var termAvg = termGrades.Average(g => (g.Score / g.MaxScore) * 100m);
+            <h3 style="color: var(--maroon); margin: 20px 0 10px;">@term · Average @termAvg.ToString("0.0")%</h3>
+            <div class="panel" style="margin-bottom: 20px;">
+                <table>
+                    <thead>
+                        <tr><th>Subject</th><th>Exam</th><th>Score</th><th>Grade</th><th>Remarks</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var g in termGrades.OrderBy(g => g.SubjectId).ThenBy(g => g.ExamType))
+                        {
+                            <tr>
+                                <td>@(subjectLookup.TryGetValue(g.SubjectId, out var sn) ? sn : "—")</td>
+                                <td>@g.ExamType</td>
+                                <td>@g.Score.ToString("0.##") / @g.MaxScore.ToString("0.##")</td>
+                                <td><strong>@g.GradeLetter</strong></td>
+                                <td>@g.Remarks</td>
+                                <td><a class="btn-link" href="/Students/@Model.Student.Id/Subject/@g.SubjectId">Subject History</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
 
     @if (canAddGrade)
     {
-        <h2 class="section-title">Record a Grade / Assignment / Comment</h2>
+        <h2 class="section-title">Record a Grade / Comment</h2>
         <div class="panel" style="padding: 24px;">
             <form method="post" asp-page-handler="AddGrade" style="display:flex; flex-wrap:wrap; gap:14px;">
                 <div class="form-row" style="flex:1; min-width:180px; margin:0;">

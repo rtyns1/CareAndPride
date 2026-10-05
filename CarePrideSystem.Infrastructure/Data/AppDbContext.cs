@@ -24,4 +24,3 @@ namespace CarePrideSystem.Infrastructure.Data
         }
     }
 }
-

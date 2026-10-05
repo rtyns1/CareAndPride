@@ -1,0 +1,59 @@
+﻿@page "{id:guid}/Subject/{subjectId:guid}"
+@model CarePrideSystem.Web.Pages.Students.SubjectHistoryModel
+@{
+    ViewData["Title"] = "Subject History";
+}
+<div class="page-header">
+    <div>
+        <h1>@Model.SubjectName</h1>
+        <p>@Model.StudentName · Subject History</p>
+    </div>
+    <a class="btn btn-secondary" href="/Students/Details/@Model.StudentId">Back to Student</a>
+</div>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="panel" style="padding: 20px; margin-bottom: 24px; display:flex; justify-content:space-between; align-items:center;">
+    <div>
+        <div style="font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">Subject Average</div>
+        <div style="font-size:32px; font-weight:700; color: var(--maroon);">@Model.Average.ToString("0.0")%</div>
+    </div>
+    <div>
+        <div style="font-size:13px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted);">Assessments</div>
+        <div style="font-size:32px; font-weight:700; color: var(--maroon);">@Model.Grades.Count</div>
+    </div>
+</div>
+
+<div class="panel">
+    @if (Model.Grades.Count == 0)
+    {
+        <div class="empty-state">
+            <span class="icon">◯</span>
+            <p>No grades in this subject yet.</p>
+        </div>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr><th>Date</th><th>Term</th><th>Type</th><th>Score</th><th>Grade</th><th>Remarks</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var g in Model.Grades.OrderByDescending(g => g.RecordedAtUtc))
+                {
+                    <tr>
+                        <td>@g.RecordedAtUtc.ToString("yyyy-MM-dd")</td>
+                        <td>@g.Term</td>
+                        <td>@g.ExamType</td>
+                        <td>@g.Score.ToString("0.##") / @g.MaxScore.ToString("0.##")</td>
+                        <td><strong>@g.GradeLetter</strong></td>
+                        <td>@g.Remarks</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

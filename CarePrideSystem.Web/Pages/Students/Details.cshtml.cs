@@ -1,4 +1,6 @@
-﻿using CarePrideSystem.Application.DTOs.Classes;
+﻿using CarePrideSystem.Application.DTOs.Assignments;
+using CarePrideSystem.Application.DTOs.Auth;
+using CarePrideSystem.Application.DTOs.Classes;
 using CarePrideSystem.Application.DTOs.Grades;
 using CarePrideSystem.Application.DTOs.Students;
 using CarePrideSystem.Application.DTOs.Subjects;
@@ -13,8 +15,6 @@ namespace CarePrideSystem.Web.Pages.Students
     [Authorize(Roles = "Admin,Secretary,Teacher")]
     public class DetailsModel : PageModel
     {
-        private static readonly Guid DefaultYear = Guid.Parse("00000000-0000-0000-0000-000000000001");
-
         private readonly ApiClient _api;
         public DetailsModel(ApiClient api) { _api = api; }
 
@@ -23,6 +23,11 @@ namespace CarePrideSystem.Web.Pages.Students
         public List<SubjectDto> Subjects { get; set; } = new();
         public List<GradeDto> VisibleGrades { get; set; } = new();
         public List<SubjectDto> AllowedSubjectsForGrade { get; set; } = new();
+        public List<AssignmentDto> Assignments { get; set; } = new();
+        public Dictionary<Guid, GradeDto> GradesForAssignment { get; set; } = new();
+        public Dictionary<string, List<GradeDto>> GradesByTerm { get; set; } = new();
+        public Dictionary<Guid, string> TeacherLookup { get; set; } = new();
+        public decimal OverallAverage { get; set; }
         public bool CanAddGrade { get; set; }
         public string? ErrorMessage { get; set; }
         public string? SuccessMessage { get; set; }
@@ -106,43 +111,61 @@ namespace CarePrideSystem.Web.Pages.Students
             var allGrades = new List<GradeDto>();
             try { allGrades = await _api.GetAsync<List<GradeDto>>($"api/grades/student/{id}") ?? new(); } catch { }
 
-            // Admin / Secretary see everything
+            var allAssignments = new List<AssignmentDto>();
+            try { allAssignments = await _api.GetAsync<List<AssignmentDto>>($"api/assignments/student/{id}") ?? new(); } catch { }
+
+            var allUsers = new List<UserDto>();
+            try { allUsers = await _api.GetAsync<List<UserDto>>("api/users") ?? new(); } catch { }
+            TeacherLookup = allUsers.Where(u => u.Role == Domain.Enums.UserRole.Teacher)
+                                    .ToDictionary(u => u.Id, u => u.FullName);
+
             if (User.IsInRole("Admin") || User.IsInRole("Secretary"))
             {
                 VisibleGrades = allGrades;
                 AllowedSubjectsForGrade = Subjects;
                 CanAddGrade = true;
-                return true;
-            }
-
-            // Teacher: figure out their assignments
-            var classAssignments = new List<ClassTeacherDto>();
-            var subjectAssignments = new List<TeacherSubjectDto>();
-            try { classAssignments = await _api.GetAsync<List<ClassTeacherDto>>($"api/teacherassignments/teachers/{userId}/classes") ?? new(); } catch { }
-            try { subjectAssignments = await _api.GetAsync<List<TeacherSubjectDto>>($"api/teacherassignments/teachers/{userId}/subjects") ?? new(); } catch { }
-
-            var isClassTeacherOfThisStudent = classAssignments.Any(ct => ct.ClassId == Student.ClassId);
-
-            // Subjects this teacher teaches in THIS student's class
-            var subjectsTaughtHere = subjectAssignments
-                .Where(ts => ts.ClassId == Student.ClassId)
-                .Select(ts => ts.SubjectId)
-                .Distinct()
-                .ToList();
-
-            if (isClassTeacherOfThisStudent)
-            {
-                // Full view: all grades for this student
-                VisibleGrades = allGrades;
-                AllowedSubjectsForGrade = Subjects.Where(s => subjectsTaughtHere.Contains(s.Id)).ToList();
-                CanAddGrade = AllowedSubjectsForGrade.Count > 0;
             }
             else
             {
-                // Subject teacher: only grades of the subjects they teach in this class
-                VisibleGrades = allGrades.Where(g => subjectsTaughtHere.Contains(g.SubjectId)).ToList();
+                var classAssignments = new List<ClassTeacherDto>();
+                var subjectAssignments = new List<TeacherSubjectDto>();
+                try { classAssignments = await _api.GetAsync<List<ClassTeacherDto>>($"api/teacherassignments/teachers/{userId}/classes") ?? new(); } catch { }
+                try { subjectAssignments = await _api.GetAsync<List<TeacherSubjectDto>>($"api/teacherassignments/teachers/{userId}/subjects") ?? new(); } catch { }
+
+                var isClassTeacherOfThisStudent = classAssignments.Any(ct => ct.ClassId == Student.ClassId);
+                var subjectsTaughtHere = subjectAssignments
+                    .Where(ts => ts.ClassId == Student.ClassId)
+                    .Select(ts => ts.SubjectId)
+                    .Distinct()
+                    .ToList();
+
+                if (isClassTeacherOfThisStudent)
+                {
+                    VisibleGrades = allGrades;
+                }
+                else
+                {
+                    VisibleGrades = allGrades.Where(g => subjectsTaughtHere.Contains(g.SubjectId)).ToList();
+                }
+
                 AllowedSubjectsForGrade = Subjects.Where(s => subjectsTaughtHere.Contains(s.Id)).ToList();
                 CanAddGrade = AllowedSubjectsForGrade.Count > 0;
+            }
+
+            Assignments = allAssignments;
+
+            GradesForAssignment = VisibleGrades
+                .Where(g => g.AssignmentId.HasValue)
+                .GroupBy(g => g.AssignmentId!.Value)
+                .ToDictionary(grp => grp.Key, grp => grp.First());
+
+            GradesByTerm = VisibleGrades
+                .GroupBy(g => string.IsNullOrWhiteSpace(g.Term) ? "Term 1" : g.Term)
+                .ToDictionary(grp => grp.Key, grp => grp.ToList());
+
+            if (VisibleGrades.Count > 0)
+            {
+                OverallAverage = VisibleGrades.Average(g => (g.Score / g.MaxScore) * 100m);
             }
 
             return true;
